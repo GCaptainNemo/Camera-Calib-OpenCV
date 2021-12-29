@@ -50,7 +50,7 @@
   <!-- If true (non-zero) distortion coefficient k2 will be equals to zero.-->
   <Fix_K2>0</Fix_K2>
   <!-- If true (non-zero) distortion coefficient k3 will be equals to zero.-->
-  <Fix_K3>0</Fix_K3>
+  <Fix_K3>1</Fix_K3>
   <!-- If true (non-zero) distortion coefficient k4 will be equals to zero.-->
   <Fix_K4>0</Fix_K4>
   <!-- If true (non-zero) distortion coefficient k5 will be equals to zero.-->

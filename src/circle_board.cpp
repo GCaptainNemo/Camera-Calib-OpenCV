@@ -18,6 +18,7 @@
 using namespace cv;
 using namespace std;
 
+// use cv::calibrateCameraRO() function to calibrate
 
 
 class Settings
@@ -348,7 +349,8 @@ int main(int argc, char* argv[])
         {
             // if calibration threshold was not reached yet, calibrate now
             if( mode != CALIBRATED && !imagePoints.empty() )
-                runCalibrationAndSave(s, imageSize,  cameraMatrix, distCoeffs, imagePoints, grid_width,
+                // start calibration!!!!!!!!!!!!!!!!!!!!!!!!!!!
+				runCalibrationAndSave(s, imageSize,  cameraMatrix, distCoeffs, imagePoints, grid_width,
                                       release_object);
             break;
         }
@@ -463,8 +465,10 @@ int main(int argc, char* argv[])
         //! [await_input]
     }
 
+	// ///////////////////////////////////////////////////////////////////////////////////////////////
     // -----------------------Show the undistorted image for the image list ------------------------
     //! [show_results]
+	// //////////////////////////////////////////////////////////////////////////////////////////////
     if( s.inputType == Settings::IMAGE_LIST && s.showUndistorsed )
     {
         Mat view, rview, map1, map2;
@@ -496,7 +500,7 @@ int main(int argc, char* argv[])
             if(view.empty())
                 continue;
             remap(view, rview, map1, map2, INTER_LINEAR);
-            imshow("Image View", rview);
+            imshow("Image Correction", rview);
             char c = (char)waitKey();
             if( c  == ESC_KEY || c == 'q' || c == 'Q' )
                 break;
@@ -606,6 +610,7 @@ static bool runCalibration( Settings& s, Size& imageSize, Mat& cameraMatrix, Mat
         int iFixedPoint = -1;
         if (release_object)
             iFixedPoint = s.boardSize.width - 1;
+		// s.flag has whether using specific distortion coefficients or not. 
         rms = calibrateCameraRO(objectPoints, imagePoints, imageSize, iFixedPoint,
                                 cameraMatrix, distCoeffs, rvecs, tvecs, newObjPoints,
                                 s.flag | CALIB_USE_LU);
