@@ -9,7 +9,7 @@ include_directories("C:/opencv/opencv/build/install/include")
 include_directories("C:/opencv/opencv/build/install/include/opencv2")
 include_directories("include")
 
-add_executable(circle_board_calib src/circle_board.cpp)
+add_executable(circle_board_calib src/circle_board.cpp src/blob_detector.cpp)
 add_executable(chessboard_calib src/chessboard.cpp)
 
 message(STATUS "OPENCV_DIR = ${OpenCV_INCLUDE_DIRS}")

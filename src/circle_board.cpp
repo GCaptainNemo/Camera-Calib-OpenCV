@@ -11,9 +11,14 @@
 #include <opencv2/imgcodecs.hpp>
 #include <opencv2/videoio.hpp>
 #include <opencv2/highgui.hpp>
+#include "circle_board.h"
+
+#define USING_BLOB_DETECTOR
 
 using namespace cv;
 using namespace std;
+
+
 
 class Settings
 {
@@ -296,21 +301,33 @@ int main(int argc, char* argv[])
 
     float grid_width = s.squareSize * (s.boardSize.width - 1);
     bool release_object = false;
-    if (parser.has("d")) {
-        grid_width = parser.get<float>("d");
-        release_object = true;
-    }
+	if (parser.has("d")) {
+		grid_width = parser.get<float>("d");
+		release_object = true;
+	}
 
     vector<vector<Point2f> > imagePoints;
+	// CameraMatrix => intrinsic matrix
     Mat cameraMatrix, distCoeffs;
     Size imageSize;
-    int mode = s.inputType == Settings::IMAGE_LIST ? CAPTURING : DETECTION;
-    clock_t prevTimestamp = 0;
+	std::cout << "s.inputType = " << s.inputType << std::endl;
+    // mode = CAPTURING(1)
+	int mode = s.inputType == Settings::IMAGE_LIST ? CAPTURING : DETECTION;
+	std::cout << "mode = " << mode << std::endl;
+	clock_t prevTimestamp = 0;
     const Scalar RED(0,0,255), GREEN(0,255,0);
     const char ESC_KEY = 27;
 
     //! [get_input]
-    for(;;)
+#ifdef USING_BLOB_DETECTOR
+	Ptr<FeatureDetector> blobDetector;
+	get_blob_detectors(&blobDetector);
+
+#endif // USING_BLOB_DETECTOR
+
+	
+
+	for(;;)
     {
         Mat view;
         bool blinkOutput = false;
@@ -318,7 +335,8 @@ int main(int argc, char* argv[])
         view = s.nextImage();
 
         //-----  If no more image, or got enough, then stop calibration and show result -------------
-        if( mode == CAPTURING && imagePoints.size() >= (size_t)s.nrFrames )
+		std::cout << "img_count = " << imagePoints.size() << ", frame_num = " << (size_t)s.nrFrames << std::endl;
+		if( mode == CAPTURING && imagePoints.size() >= (size_t)s.nrFrames )
         {
           if(runCalibrationAndSave(s, imageSize,  cameraMatrix, distCoeffs, imagePoints, grid_width,
                                    release_object))
@@ -343,7 +361,7 @@ int main(int argc, char* argv[])
         vector<Point2f> pointBuf;
 
         bool found;
-
+		// use HE(histogram equalization) and adaptive threshold segmentation
         int chessBoardFlags = CALIB_CB_ADAPTIVE_THRESH | CALIB_CB_NORMALIZE_IMAGE;
 
         if(!s.useFisheye) {
@@ -357,8 +375,12 @@ int main(int argc, char* argv[])
             found = findChessboardCorners( view, s.boardSize, pointBuf, chessBoardFlags);
             break;
         case Settings::CIRCLES_GRID:
-            found = findCirclesGrid( view, s.boardSize, pointBuf );
-            break;
+#ifdef USING_BLOB_DETECTOR
+			found = findCirclesGrid(view, s.boardSize, pointBuf, CALIB_CB_SYMMETRIC_GRID | CALIB_CB_CLUSTERING, blobDetector);
+#else
+			found = findCirclesGrid(view, s.boardSize, pointBuf, CALIB_CB_SYMMETRIC_GRID | CALIB_CB_CLUSTERING);
+#endif
+			break;
         case Settings::ASYMMETRIC_CIRCLES_GRID:
             found = findCirclesGrid( view, s.boardSize, pointBuf, CALIB_CB_ASYMMETRIC_GRID );
             break;
@@ -366,8 +388,7 @@ int main(int argc, char* argv[])
             found = false;
             break;
         }
-        //! [find_pattern]
-        //! [pattern_found]
+        // found = false
         if ( found)                // If done with success,
         {
               // improve the found corners' coordinate accuracy for chessboard
@@ -458,11 +479,16 @@ int main(int argc, char* argv[])
         }
         else
         {
-            initUndistortRectifyMap(
+			std::cout << "cameraMatrix = " << cameraMatrix << std::endl;
+			std::cout << "distCoeffs = " << distCoeffs << std::endl;
+
+			cv::Mat new_camera_mat = 
+			getOptimalNewCameraMatrix(cameraMatrix, distCoeffs, imageSize, 1, imageSize, 0);
+			initUndistortRectifyMap(
                 cameraMatrix, distCoeffs, Mat(),
-                getOptimalNewCameraMatrix(cameraMatrix, distCoeffs, imageSize, 1, imageSize, 0), imageSize,
-                CV_16SC2, map1, map2);
-        }
+				new_camera_mat,
+				imageSize, CV_16SC2, map1, map2);
+		}
 
         for(size_t i = 0; i < s.imageList.size(); i++ )
         {
@@ -477,9 +503,8 @@ int main(int argc, char* argv[])
         }
     }
     //! [show_results]
-
     return 0;
-}
+};
 
 //! [compute_errors]
 static double computeReprojectionErrors( const vector<vector<Point3f> >& objectPoints,
