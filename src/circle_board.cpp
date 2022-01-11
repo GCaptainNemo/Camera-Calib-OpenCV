@@ -139,7 +139,7 @@ public:
         if(aspectRatio)            flag |= CALIB_FIX_ASPECT_RATIO;
         if(fixK1)                  flag |= CALIB_FIX_K1;
         if(fixK2)                  flag |= CALIB_FIX_K2;
-        if(fixK3)                  flag |= CALIB_FIX_K3;
+        if(fixK3)                  flag |= CALIB_FIX_K3;   // radial coefficient
         if(fixK4)                  flag |= CALIB_FIX_K4;
         if(fixK5)                  flag |= CALIB_FIX_K5;
 
@@ -459,8 +459,9 @@ int main(int argc, char* argv[])
             Mat temp = view.clone();
             if (s.useFisheye)
               cv::fisheye::undistortImage(temp, view, cameraMatrix, distCoeffs);
-            else
-              undistort(temp, view, cameraMatrix, distCoeffs);
+            else{
+                undistort(temp, view, cameraMatrix, distCoeffs);
+            }
         }
         //! [output_undistorted]
         //------------------------------ Show image and check for input commands -------------------
@@ -490,6 +491,8 @@ int main(int argc, char* argv[])
     // -----------------------Show the undistorted image for the image list ------------------------
     //! [show_results]
 	// //////////////////////////////////////////////////////////////////////////////////////////////
+    // distCoeffs.at<double>(4, 0) = 0.0;
+
     if( s.inputType == Settings::IMAGE_LIST && s.showUndistorsed )
     {
         Mat view, rview, map1, map2;
@@ -640,7 +643,7 @@ static bool runCalibration( Settings& s, Size& imageSize, Mat& cameraMatrix, Mat
                                 s.flag | CALIB_USE_LU);
         #elif __linux__ 
         // OPENCV 3.2.0
-        rms = calibrateCamera(objectPoints, imagePoints, imageSize, cameraMatrix, distCoeffs, rvecs, tvecs);
+        rms = calibrateCamera(objectPoints, imagePoints, imageSize, cameraMatrix, distCoeffs, rvecs, tvecs, s.flag);
     
         #endif
     }

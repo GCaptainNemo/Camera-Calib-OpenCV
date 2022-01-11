@@ -2,5 +2,4 @@ build/
 *.jpg
 *.bmp
 imgs/
-config_cpy/
-config/
+
