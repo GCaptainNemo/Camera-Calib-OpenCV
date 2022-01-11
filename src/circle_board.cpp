@@ -13,7 +13,9 @@
 #include <opencv2/highgui.hpp>
 #include "circle_board.h"
 
+
 #define USING_BLOB_DETECTOR
+#define VISUALIZE_KEYPTS   
 
 using namespace cv;
 using namespace std;
@@ -278,6 +280,7 @@ int main(int argc, char* argv[])
     //! [file_read]
     Settings s;
     const string inputSettingsFile = parser.get<string>(0);
+    std::cout << "inputSettingsFile = " << inputSettingsFile << std::endl;
     FileStorage fs(inputSettingsFile, FileStorage::READ); // Read the settings
     if (!fs.isOpened())
     {
@@ -334,7 +337,7 @@ int main(int argc, char* argv[])
         bool blinkOutput = false;
 
         view = s.nextImage();
-
+        
         //-----  If no more image, or got enough, then stop calibration and show result -------------
 		std::cout << "img_count = " << imagePoints.size() << ", frame_num = " << (size_t)s.nrFrames << std::endl;
 		if( mode == CAPTURING && imagePoints.size() >= (size_t)s.nrFrames )
@@ -354,6 +357,18 @@ int main(int argc, char* argv[])
                                       release_object);
             break;
         }
+        #ifdef VISUALIZE_KEYPTS
+        std::vector<KeyPoint> centers;
+        blobDetector->detect(view, centers);
+        namedWindow("circle pattern", 0);
+        cv::Mat view_with_pts;
+        drawKeypoints(view, centers, view_with_pts, (255, 255, 0));
+        // resizeWindow("circle pattern", view.cols * 4, view.rows * 4);
+        imshow("circle pattern", view_with_pts);
+            // cv::waitKey(0);
+
+        #endif
+
         //! [get_input]
 
         imageSize = view.size();  // Format input image.
@@ -405,6 +420,8 @@ int main(int argc, char* argv[])
                 if( mode == CAPTURING &&  // For camera only take new samples after delay time
                     (!s.inputCapture.isOpened() || clock() - prevTimestamp > s.delay*1e-3*CLOCKS_PER_SEC) )
                 {
+                    std::cout << "PointBuf.size = " << pointBuf.size() << std::endl;
+                    std::cout << pointBuf << std::endl;
                     imagePoints.push_back(pointBuf);
                     prevTimestamp = clock();
                     blinkOutput = s.inputCapture.isOpened();
@@ -449,8 +466,12 @@ int main(int argc, char* argv[])
         //------------------------------ Show image and check for input commands -------------------
         //! [await_input]
         imshow("Image View", view);
+        #ifdef VISUALIZE_KEYPTS
+        char key = (char)waitKey(0);
+        
+        #else
         char key = (char)waitKey(s.inputCapture.isOpened() ? 50 : s.delay);
-
+        #endif
         if( key  == ESC_KEY )
             break;
 
@@ -610,10 +631,18 @@ static bool runCalibration( Settings& s, Size& imageSize, Mat& cameraMatrix, Mat
         int iFixedPoint = -1;
         if (release_object)
             iFixedPoint = s.boardSize.width - 1;
-		// s.flag has whether using specific distortion coefficients or not. 
+		// s.flag has whether using specific distortion coefficients or not.
+       
+        #if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+        // OPENCV 4.5.0
         rms = calibrateCameraRO(objectPoints, imagePoints, imageSize, iFixedPoint,
                                 cameraMatrix, distCoeffs, rvecs, tvecs, newObjPoints,
                                 s.flag | CALIB_USE_LU);
+        #elif __linux__ 
+        // OPENCV 3.2.0
+        rms = calibrateCamera(objectPoints, imagePoints, imageSize, cameraMatrix, distCoeffs, rvecs, tvecs);
+    
+        #endif
     }
 
     if (release_object) {

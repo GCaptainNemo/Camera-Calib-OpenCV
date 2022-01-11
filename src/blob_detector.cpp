@@ -61,8 +61,15 @@ void test_blob_detectors(const char *img_dir)
 	drawChessboardCorners(cimg, patternSize, centers, found);
 
 	double sf = 960. / MAX(img.rows, img.cols);
-	resize(img, img, Size(), sf, sf, INTER_LINEAR_EXACT);
-	resize(cimg, cimg, Size(), sf, sf, INTER_LINEAR_EXACT);
+	
+	#if defined(WIN32) || defined(_WIN32) || defined(__WIN32__) || defined(__NT__)
+        // OPENCV 4.5.0
+		resize(img, img, Size(), sf, sf, INTER_LINEAR_EXACT);
+		resize(cimg, cimg, Size(), sf, sf, INTER_LINEAR_EXACT);
+	#elif __linux__
+		resize(img, img, Size(), sf, sf, CV_INTER_LINEAR);
+		resize(cimg, cimg, Size(), sf, sf, CV_INTER_LINEAR);
+	#endif
 	cv::namedWindow("origin img", cv::WINDOW_NORMAL);
 	cv::namedWindow("corners", cv::WINDOW_NORMAL);
 
@@ -89,6 +96,8 @@ void get_blob_detectors(Ptr<FeatureDetector> *blobDetector)
 	params.blobColor = 255; // 255 choose bright blob, 0 choose dark blob.
 	params.filterByConvexity = true;
 	params.minConvexity = 0.9;
+	params.filterByInertia = true;
+	params.minInertiaRatio = 0.7; // line:0, circle:1
 	/*params.minDistBetweenBlobs = 5;
 	params.filterByInertia = false;
 	params.minInertiaRatio = 0.5;*/
