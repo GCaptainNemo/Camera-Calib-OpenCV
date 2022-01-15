@@ -29,7 +29,7 @@
   <Calibrate_FixPrincipalPointAtTheCenter> 0 </Calibrate_FixPrincipalPointAtTheCenter>
   
   
-  <Write_outputFileName>"/media/why/LENOVO_USB_HDD/ir_rgb_registration_data_collect/0001_monocalib.yaml"</Write_outputFileName>
+  <Write_outputFileName>"/media/why/LENOVO_USB_HDD/ir_rgb_registration_data_collect/0005_monocalib.yaml"</Write_outputFileName>
   
   <Write_DetectedFeaturePoints>0</Write_DetectedFeaturePoints>
   
@@ -46,7 +46,7 @@
   <Fix_K2>0</Fix_K2>
   
   <Fix_K3>1</Fix_K3>
- 
+  
   <Fix_K4>1</Fix_K4>
   
   <Fix_K5>1</Fix_K5>

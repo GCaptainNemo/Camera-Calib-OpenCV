@@ -1,0 +1,26 @@
+<?xml version="1.0"?>
+<opencv_storage>
+<Settings>
+  <VISUALIZE_KEYPTS> 1 </VISUALIZE_KEYPTS>
+  <BoardSize_Width> 8 </BoardSize_Width>
+  <BoardSize_Height> 6 </BoardSize_Height>
+  
+  
+  <Square_Size>60</Square_Size>
+  
+  
+  <Calibrate_Pattern>"CIRCLES_GRID"</Calibrate_Pattern>
+  
+  
+  <Input>"/home/why/ROS_self/publish_collect_review_data/src/review_data/src/calib_src/config/stereo_imgs.xml"</Input>
+
+  <InputIrParAddr>/media/why/LENOVO_USB_HDD/ir_rgb_registration_data_collect/0014_monocalib_ir.yaml</InputIrParAddr>
+
+  <InputRgbParAddr>/home/why/ROS_self/publish_collect_review_data/src/review_data/src/calib_src/config/param3.yaml</InputRgbParAddr>
+
+  
+  <Write_outputFileName>"/media/why/LENOVO_USB_HDD/ir_rgb_registration_data_collect/0014_stereocalib_ir.yaml"</Write_outputFileName>
+  
+  
+</Settings>
+</opencv_storage>

@@ -103,3 +103,31 @@ void get_blob_detectors(Ptr<FeatureDetector> *blobDetector)
 	params.minInertiaRatio = 0.5;*/
 	*blobDetector = SimpleBlobDetector::create(params);	
 };
+
+
+void get_blob_detectors(Ptr<FeatureDetector> *blobDetector, const bool &is_ir)
+{
+	// Blob算子参数
+	SimpleBlobDetector::Params params;
+	/*params.minThreshold = 0;
+	params.maxThreshold = 255;*/
+	params.maxArea = 10e4;
+	params.minArea = 10;
+	params.filterByArea = true;
+
+	/*params.filterByCircularity = true;
+	params.minCircularity = 0.1;*/
+	params.filterByColor = true;  
+	if (is_ir) {params.blobColor = 255;} // 255 choose bright blob, 0 choose dark blob.
+	else{params.blobColor = 0;}
+	params.filterByConvexity = true;
+	params.minConvexity = 0.9;
+	params.filterByInertia = true;
+	params.minInertiaRatio = 0.7; // line:0, circle:1
+	/*params.minDistBetweenBlobs = 5;
+	params.filterByInertia = false;
+	params.minInertiaRatio = 0.5;*/
+	*blobDetector = SimpleBlobDetector::create(params);	
+};
+
+
